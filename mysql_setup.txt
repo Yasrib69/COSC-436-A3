@@ -1,0 +1,24 @@
+## Run this commands in ur MySQL server to setup the database
+## sudo MySQL // command used to enter MySQL server
+
+==============================================================================
+1. create user '436_mysql_user'@'localhost' identified by '123pwd456';
+2. create database 436db;
+3. grant all privileges on 436db.* to '436_mysql_user'@'localhost';
+4. use 436db;
+5. CREATE TABLE users(
+   username VARCHAR(50) PRIMARY KEY, 
+   password VARCHAR(255) NOT NULL, 
+   screenName VARCHAR(50) UNIQUE NOT NULL
+    );
+6. CREATE TABLE list_of_chatrooms (
+   chatroomName VARCHAR(100) PRIMARY KEY, 
+   chatroomKey VARCHAR(100) NOT NULL
+   );
+7. CREATE TABLE current_chatroom_occupants (
+   chatroomName VARCHAR(100), 
+   screenName VARCHAR(50), 
+   PRIMARY KEY (chatroomName, screenName), 
+   FOREIGN KEY (chatroomName) REFERENCES list_of_chatrooms(chatroomName) ON DELETE CASCADE, 
+   FOREIGN KEY (screenName) REFERENCES users(screenName) ON DELETE CASCADE);
+=================================================================================

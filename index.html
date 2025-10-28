@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chatroom — Your Name(s) Here</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Web Chatroom — Your Name Here</h1>
+    <nav id="nav">
+      <button id="helpBtn">Help</button>
+      <button id="signupBtn">Sign Up</button>
+      <button id="loginBtn">Login</button>
+      <button id="logoutBtn" style="display:none;">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="authArea">
+      <!-- signup/login forms will be rendered here or toggled visible -->
+      <div id="signupForm" class="auth-form" style="display:none;">
+        <h2>Sign Up</h2>
+        <form id="formSignup">
+          <label>Username <input name="username" required></label><br>
+          <label>Screen Name <input name="screenName" required></label><br>
+          <label>Password <input name="password" type="password" required minlength="6"></label><br>
+          <div id="signupErrors" class="errors"></div>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+
+      <div id="loginForm" class="auth-form" style="display:none;">
+        <h2>Login</h2>
+        <form id="formLogin">
+          <label>Username <input name="username" required></label><br>
+          <label>Password <input name="password" type="password" required></label><br>
+          <div id="loginErrors" class="errors"></div>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="appArea" style="display:none;">
+      <!-- After login, inject chat UI here (rooms, messages) -->
+      <h2>Welcome, <span id="yourScreenName"></span></h2>
+      <div id="availableRooms"></div>
+      <!-- chat UI placeholder -->
+      <div id="chatArea">
+        <h3 id="currentRoom">Not in a room</h3>
+        <div id="messages" style="height:300px;overflow:auto;border:1px solid #ccc;padding:8px;"></div>
+        <div id="chatControls">
+          <input id="chatInput" placeholder="Type new messages here..." />
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Help overlay -->
+  <div id="helpOverlay" class="overlay" style="display:none;">
+    <div class="overlay-inner">
+      <button id="helpClose" class="close">[x]</button>
+      <h2>Help — How this chatroom works</h2>
+      <p>
+        <!-- Put 250+ words here explaining chatroom behavior -->
+        This chatroom allows users to sign up and log in using a username, password, and screen name. After logging in, users can create or join chatrooms. Chatrooms may optionally have a key (password) — if a room is locked, the user must provide the key to join. Rooms are listed in the "Available Rooms" panel. New rooms are broadcast to all connected clients. Messages typed in the current room will be sent to the server and broadcast only to occupants of that room. The UI updates without reloading the page using JavaScript fetch() for PHP endpoints and web sockets for live messaging. The chat interface allows private direct messages via a DM control (for grad students). All user sessions are tracked on the server; logging out removes the user from any room and ends the session. (You should expand this paragraph to 250+ words in your final submission.)
+      </p>
+    </div>
+  </div>
+
+<script src="clientSide.js"></script>
+</body>
+</html>
