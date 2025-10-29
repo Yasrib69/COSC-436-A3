@@ -1,4 +1,4 @@
-// js/auth.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const signupBtn = document.getElementById('signupBtn');
     const loginBtn = document.getElementById('loginBtn');
@@ -104,14 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   
     function onLoginSuccess(screenName) {
-      // show app area, hide auth area
       authArea.style.display = 'none';
       appArea.style.display = 'block';
       signupBtn.style.display = loginBtn.style.display = 'none';
       logoutBtn.style.display = 'inline-block';
       yourScreenName.textContent = screenName;
-      // TODO: fetch available rooms and set up websockets
-      // fetch('php/api/get_rooms.php')...
+      initRoomHandler(screenName);
     }
   });
   

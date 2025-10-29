@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>Web Chatroom — Your Name Here</h1>
+    <h1>Web Chatroom — Ishaq, Yasrib</h1>
     <nav id="nav">
       <button id="helpBtn">Help</button>
       <button id="signupBtn">Sign Up</button>
@@ -19,7 +19,6 @@
 
   <main>
     <section id="authArea">
-      <!-- signup/login forms will be rendered here or toggled visible -->
       <div id="signupForm" class="auth-form" style="display:none;">
         <h2>Sign Up</h2>
         <form id="formSignup">
@@ -43,10 +42,13 @@
     </section>
 
     <section id="appArea" style="display:none;">
-      <!-- After login, inject chat UI here (rooms, messages) -->
       <h2>Welcome, <span id="yourScreenName"></span></h2>
-      <div id="availableRooms"></div>
-      <!-- chat UI placeholder -->
+
+      <div style="margin-bottom:8px;">
+        <button id="createRoomBtn" title="Create new chatroom">+ Create Room</button>
+      </div>
+
+      <div id="availableRooms" style="max-height:240px; overflow:auto; border:1px solid #ddd; padding:6px;"></div>
       <div id="chatArea">
         <h3 id="currentRoom">Not in a room</h3>
         <div id="messages" style="height:300px;overflow:auto;border:1px solid #ccc;padding:8px;"></div>
@@ -58,18 +60,63 @@
     </section>
   </main>
 
-  <!-- Help overlay -->
+
   <div id="helpOverlay" class="overlay" style="display:none;">
     <div class="overlay-inner">
       <button id="helpClose" class="close">[x]</button>
       <h2>Help — How this chatroom works</h2>
       <p>
-        <!-- Put 250+ words here explaining chatroom behavior -->
         This chatroom allows users to sign up and log in using a username, password, and screen name. After logging in, users can create or join chatrooms. Chatrooms may optionally have a key (password) — if a room is locked, the user must provide the key to join. Rooms are listed in the "Available Rooms" panel. New rooms are broadcast to all connected clients. Messages typed in the current room will be sent to the server and broadcast only to occupants of that room. The UI updates without reloading the page using JavaScript fetch() for PHP endpoints and web sockets for live messaging. The chat interface allows private direct messages via a DM control (for grad students). All user sessions are tracked on the server; logging out removes the user from any room and ends the session. (You should expand this paragraph to 250+ words in your final submission.)
       </p>
     </div>
   </div>
 
+  <div id="roomOverlay" class="overlay" style="display:none;">
+    <div class="overlay-inner" role="dialog" aria-modal="true" aria-labelledby="roomOverlayTitle">
+      <h3 id="roomOverlayTitle">Create Chatroom</h3>
+      <form id="roomForm">
+        <label>
+          Chatroom name
+          <input id="roomName" name="roomName" type="text" maxlength="100" required />
+        </label>
+        <br/>
+        <label>
+          Chatroom key (optional)
+          <input id="roomKey" name="roomKey" type="text" maxlength="100" />
+        </label>
+        <div id="roomFormError" class="errors" style="color:red;margin-top:8px;"></div>
+        <div style="margin-top:10px;">
+          <button type="submit">Create</button>
+          <button type="button" id="roomCancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- just to get a bit lloking nice. you have to make it way bettter -->
+  <style>
+    .overlay {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index: 9999;
+    }
+    .overlay-inner {
+      background: #fff;
+      padding: 18px;
+      border-radius: 6px;
+      max-width: 420px;
+      width: 92%;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    .overlay-inner input { width:100%; padding:6px; margin-top:6px; }
+    .errors { font-size:0.9rem; }
+  </style>
+
 <script src="clientSide.js"></script>
+<script src="roomHandler.js"></script>
 </body>
 </html>

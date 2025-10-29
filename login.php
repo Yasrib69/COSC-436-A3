@@ -1,5 +1,4 @@
 <?php
-// php/api/login.php
 header('Content-Type: application/json; charset=utf-8');
 
 require_once 'PdoMethods.php';
