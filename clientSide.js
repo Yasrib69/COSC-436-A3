@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appArea.style.display = 'none';
         logoutBtn.style.display = 'none';
         signupBtn.style.display = loginBtn.style.display = 'inline-block';
+        disconnectFromServer();
       }
       console.log(j.message);
     });
@@ -110,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
       logoutBtn.style.display = 'inline-block';
       yourScreenName.textContent = screenName;
       initRoomHandler(screenName);
+      connectToServer();
     }
   });
   
