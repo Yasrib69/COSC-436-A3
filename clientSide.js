@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
         appArea.style.display = 'none';
         logoutBtn.style.display = 'none';
         signupBtn.style.display = loginBtn.style.display = 'inline-block';
+        document.getElementById("messages").innerHTML = "";
+        document.getElementById('currentRoom').textContent = "Not in a room";
         disconnectFromServer();
       }
       console.log(j.message);

@@ -9,18 +9,6 @@ echo "Server now running on port $port\n";
 // Check for incoming messages or connect/disconnect requests
 $listOfConnectedClients = []; 
 $connectedClientsHandshakes = [];
-
-// <<< NEW: room membership map and client name map
-$clientsInRooms = [];   // roomName => array of client socket resources
-$clientNames    = [];   // socketId => screenName
-
-// <<< NEW: helper to produce stable id for socket (works for object or resource)
-function socketId($sock) {
-    if (is_object($sock)) return spl_object_hash($sock);
-    if (is_resource($sock)) return (string) get_resource_id($sock);
-    return md5(serialize($sock));
-}
-
 // handshake is a mechanisom by which the server and the connecting clients introduce each other,
 // authenticate and establish how they want to communicate/the rules.
 
@@ -47,15 +35,11 @@ do {
 				disconnectClient($clientSocket, $listOfConnectedClients, $connectedClientsHandshakes, $clientsWithData);
 			}
             else {
-                if (!empty($message)) {
-
+                if (!empty($message)) {  // updated code. tweaked to handle room broadcasting as well
                     echo "Received:>>$message<<\n";
                     $decoded = json_decode($message, true);
-
-                    // Ensure globals are available
-                    global $clientsInRooms, $clientNames, $listOfConnectedClients;
-
-                    // broadcasting newRoom to all clients dosent matter if in room or no
+            
+                    // If it's a room creation message, rebroadcast to all clients
                     if (isset($decoded['type']) && $decoded['type'] === 'newRoom') {
                         $broadcast = mask(json_encode([
                             'type' => 'newRoom',
@@ -64,48 +48,15 @@ do {
                         foreach ($listOfConnectedClients as $client) {
                             socket_write($client, $broadcast, strlen($broadcast));
                         }
-                        continue;
                     }
-
-                    //type joinRoom: register socket into room; payload carries 'message', broadcast it to the room
-                    if (isset($decoded['type']) && $decoded['type'] === 'joinRoom') {
-                        $room = trim($decoded['roomName'] ?? $decoded['room'] ?? '');
-                        $screenName = trim($decoded['screenName'] ?? $decoded['screen'] ?? '');
-
-                      // Remove client from any previous rooms
-                    foreach ($clientsInRooms as $r => $clientsArr) {
-                        $idx = array_search($clientSocket, $clientsArr, true);
-                        if ($idx !== false) unset($clientsInRooms[$r][$idx]);
-                    }  
-                        // add client to this room
-                        if (!isset($clientsInRooms[$room]) || !is_array($clientsInRooms[$room])) $clientsInRooms[$room] = []; // <<< NEW
-                        
-                        if (!in_array($clientSocket, $clientsInRooms[$room], true)) {
-                            $clientsInRooms[$room][] = $clientSocket;
+                    else {
+                        // Normal chat message broadcast
+                        $message = mask($message);
+                        foreach ($listOfConnectedClients as $client) {
+                            if ($client != $clientSocket)
+                                socket_write($client, $message, strlen($message));
                         }
-                       // $clientsInRooms[$room][] = $clientSocket;
-                        continue;
                     }
-                        // joinRoom payload includes a message, that will be broadcasted to everyone in the room
-                        if (isset($decoded['type']) && $decoded['type'] === 'message') {
-                            $screenName = trim($decoded['screenName'] ?? $decoded['screen'] ?? '');
-                            $room = trim($decoded['roomName'] ?? $decoded['room'] ?? '');
-                            $out = [
-                                'type' => 'message',        
-                                'roomName' => $room,
-                                'screenName' => $clientNames[$cid] ?? $screenName,
-                                'message' => $decoded['message']
-                            ];
-                            $normalized = mask(json_encode($out));
-
-                            // broadcast to members in this room (excluding sender)
-                            if (isset($clientsInRooms[$room]) && is_array($clientsInRooms[$room])) {
-                                foreach ($clientsInRooms[$room] as $c) {
-                                    if ($c !== $clientSocket) socket_write($c, $normalized, strlen($normalized));
-                                }
-                            }
-                            continue;
-                        }
                 }
             }
             
@@ -160,21 +111,11 @@ function disconnectClient ($clientSocket, &$listOfConnectedClients, &$connectedC
 echo "disconnected client\n";
 	}
 	socket_close($clientSocket);	// close the connection to it
-
-    global $clientsInRooms, $clientNames;
-    if (!empty($clientsInRooms)) {
-        foreach ($clientsInRooms as $room => $clientsArr) {
-            $idx = array_search($clientSocket, $clientsArr, true);
-            if ($idx !== false) unset($clientsInRooms[$room][$idx]);
-        }
-    }
-    $cid = socketId($clientSocket);
-    if (isset($clientNames[$cid])) unset($clientNames[$cid]);
 }
 
 
 
- // handshake is a mechanisom by which the server and the connecting clients introduce each other,
+// handshake is a mechanisom by which the server and the connecting clients introduce each other,
 // authenticate and establish how they want to communicate/the rules.
 function performHandshake($clientSocket) {
 	$len = @socket_recv($clientSocket, $headers, 1024, 0); // read to eoln or 1024 bytes
@@ -253,4 +194,88 @@ function mask($message) {
 
     return implode(array_map('chr', $frame));
 }
-?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var socket=false;
+
+// connect to server web socket
+    function connectToServer() {
+    if (socket) {
+        alert("Already connected");
+        console.log("already start");
+        return;
+    }
+        socket = new WebSocket("ws://"+window.location.hostname+":8080");
+        console.log("web socket started");
+    //document.getElementById("disconnectButton").style.display="block";
+    //document.getElementById("connectButton").style.display="none";
+    // Event handlers
+        socket.onopen = function(event) {
+        document.getElementById("messages").innerHTML += "<div style='color:red'>Connected to server</div>";
+        };
+        socket.onclose = function(event) {
+        document.getElementById("messages").innerHTML += "<div>disconnected from server</div>";
+        };
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data); // lading
+                if (data.type === "newRoom") {
+                    console.log("New room broadcast received:", data);
+                    // Only add to UI if it's not already listed
+                    addRoomToList({
+                        name: data.room.name,
+                        key: data.room.key || ""
+                    });
+                }
+                else {
+                    const data = JSON.parse(event.data);
+                    const sender = data.screenName || "Unknown";
+                    const msg = data.message || "";
+                    document.getElementById("messages").innerHTML += `<div><b>${sender}:</b> ${msg}</div>`;
+                }
+            } catch (e) {
+                console.error("Invalid JSON:", e);
+            }
+        };
+    }
+
+    function sendMessage() {
+        if (!socket) return alert("Connect first");
+        
+        const message = document.getElementById("chatInput").value.trim();
+        if (message.length === 0) return alert("Can't send empty message");
+    
+        const screenName = document.getElementById('yourScreenName').textContent; // or however you're storing it
+        const roomName = document.getElementById('currentRoom').textContent; // remove if u want
+        const payload = JSON.stringify({ roomName, screenName, message });
+    
+        socket.send(payload);
+        document.getElementById("messages").innerHTML += `<div style='color:blue'><b>Me:</b> ${message}</div>`;
+        document.getElementById("chatInput").value = "";
+    }
+    
+function disconnectFromServer() {
+    console.log("disconnected from the server");
+    if (socket)socket.close();
+    //document.getElementById("disconnectButton").style.display="none";
+    //ocument.getElementById("connectButton").style.display="block";
+    document.getElementById("messages").innerHTML += "<div style='color:red'>Disconnected from server</div>";
+    document.getElementById("messages").innerHTML = "";
+    socket=false;
+}
+

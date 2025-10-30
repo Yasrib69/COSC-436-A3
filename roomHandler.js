@@ -109,6 +109,16 @@ function addRoomToList(room) {
     "<button class='joinBtn'>Join</button>";
 
     let btn = row.querySelector('.joinBtn');
+    btn.addEventListener('click', function() {
+        let providedKey = '';
+        if (room.key) {
+            providedKey = prompt('Room is locked. Enter key:') || '';
+        }
+        joinRoom(room.name, providedKey);
+        console.log("+++++++++++++++++++++++++++++++" + room.name);
+    });
+ /*   
+    let btn = row.querySelector('.joinBtn');
   (function(r) {
     btn.addEventListener('click', function() {
       if (typeof joinRoom === 'function') {
@@ -126,7 +136,7 @@ function addRoomToList(room) {
       }
     });
   })(room);
-
+*/
   container.appendChild(row);
 }
 
@@ -155,9 +165,9 @@ function submitRoomForm(ev) {
       return;
     }
   }
-
+console.log("before payload");
   let payload = { name: name, key: key, creator: currentUser || '' };
-
+console.log("before betch");
   fetch('rooms.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -166,9 +176,20 @@ function submitRoomForm(ev) {
   .then(function(res) { return res.json(); })
   .then(function(json) {
     if (json && json.success) {
-      addRoomToList({ name: name, key: key, creatorUsername: currentUser });
+      const roomData = { name: name, key: key, creatorUsername: currentUser };
+      console.log("====================================================================");
+      addRoomToList(roomData);
+      console.log("added room to list");
       closeRoomOverlay();
+
+      console.log("starting broadcasting");
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        const payload = JSON.stringify({ type: "newRoom", room: roomData });
+        console.log("created payload");
+        socket.send(payload);
+    }
     } else {
+      console.log("error brodcasting. socket empty");
       let msg = (json && json.message) ? json.message : 'Server error';
       if (errDiv) errDiv.textContent = msg;
     }
@@ -182,5 +203,53 @@ function escapeHtml(s) {
   if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+function joinRoom(roomName, providedKey) {
+  console.log("in join+++++++++++++++++++++++++++" + roomName);
+  const payload = {
+      action: "joinRoom",
+      roomName: roomName,
+      key: providedKey
+  };
+
+  console.log(payload);
+  fetch('rooms.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+      if (data.success) {
+          // Update UI
+          const cr = document.getElementById('currentRoom');
+          if (cr) cr.textContent = roomName;
+
+          const messagesDiv = document.getElementById('messages');
+          //if (messagesDiv) messagesDiv.innerHTML = '';
+
+          console.log(`Joined room: ${roomName}`);
+
+          if (socket) {
+            const wsPayload = {
+                type: "joinRoom",
+                roomName: roomName,
+                screenName: document.getElementById('yourScreenName').textContent,
+                message: ""  // empty because we just want to join
+            };
+            console.log("sending dsataaaaaaaaaaaaaaaaaaa");
+            socket.send(JSON.stringify(wsPayload));
+        }
+          
+      } else {
+          alert("Failed to join room: " + data.message);
+      }
+  })
+  .catch(err => {
+      console.error(err);
+      alert("Network error while joining room.");
+  });
+}
+
 
 window.initRoomHandler = initRoomHandler;

@@ -1,3 +1,91 @@
+
+var socket=false;
+
+// connect to server web socket
+    function connectToServer() {
+    if (socket) {
+        alert("Already connected");
+        console.log("already start");
+        return;
+    }
+        socket = new WebSocket("ws://"+window.location.hostname+":8080");
+        console.log("web socket started");
+    //document.getElementById("disconnectButton").style.display="block";
+    //document.getElementById("connectButton").style.display="none";
+    // Event handlers
+        socket.onopen = function(event) {
+        document.getElementById("messages").innerHTML += "<div style='color:red'>Connected to server</div>";
+        };
+        socket.onclose = function(event) {
+            console.log("Disconnecting from server. socket closed on its own, idling");
+        //document.getElementById("messages").innerHTML += "<div>disconnected from server</div>";
+        };
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data); // lading
+                if (data.type === "newRoom") {
+                    console.log("New room broadcast received:", data);
+                    // Only add to UI if it's not already listed
+                    addRoomToList({
+                        name: data.room.name,
+                        key: data.room.key || ""
+                    });
+                }
+                if (data.type == "joinRoom"){
+                    console.log(" receiving messayfr from type joinROOOOOOOOm");
+                    const sender = data.screenName || "Unknown";
+                    const msg = data.message || "";
+                    console.log(msg);
+                    document.getElementById("messages").innerHTML += `<div><b>${sender}:</b> ${msg}</div>`;
+                }
+                else {
+                    console.log("no types");
+                 //   const data = JSON.parse(event.data);
+                 //   const sender = data.screenName || "Unknown";
+                 //   const msg = data.message || "";
+                 //   document.getElementById("messages").innerHTML += `<div><b>${sender}:</b> ${msg}</div>`;
+                }
+            } catch (e) {
+                console.error("Invalid JSON:", e);
+            }
+        };
+    }
+
+    function sendMessage() {
+        if (!socket) return alert("Connect first");
+        
+        const message = document.getElementById("chatInput").value.trim();
+        if (message.length === 0) return alert("Can't send empty message");
+    
+        const screenName = document.getElementById('yourScreenName').textContent;
+        const roomName = document.getElementById('currentRoom').textContent;
+        if(roomName === "Not in a room") return alert("Must be in a room to send messages");
+        console.log("innnnnnnnnnnnnndfffffffffffffffffffffffffkkkkkkkkkkkkkkkkk");
+        const payload = JSON.stringify({
+            type: 'joinRoom',
+            roomName: roomName,
+            screenName: screenName,
+            message: message
+          });
+        //const payload = JSON.stringify({ roomName, screenName, message });
+    
+        socket.send(payload);
+        document.getElementById("messages").innerHTML += `<div style='color:blue'><b>Me:</b> ${message}</div>`;
+        document.getElementById("chatInput").value = "";
+    }
+    
+function disconnectFromServer() {
+    console.log("disconnected from the server");
+    if (socket)socket.close();
+    //document.getElementById("disconnectButton").style.display="none";
+    //ocument.getElementById("connectButton").style.display="block";
+    document.getElementById("messages").innerHTML += "<div style='color:red'>Disconnected from server</div>";
+    document.getElementById("messages").innerHTML = "";
+    socket=false;
+}
+
+
+
 <?php
 // Create and listen to server connection
 $EOF=3;
@@ -72,26 +160,19 @@ do {
                         $room = trim($decoded['roomName'] ?? $decoded['room'] ?? '');
                         $screenName = trim($decoded['screenName'] ?? $decoded['screen'] ?? '');
 
-                      // Remove client from any previous rooms
-                    foreach ($clientsInRooms as $r => $clientsArr) {
-                        $idx = array_search($clientSocket, $clientsArr, true);
-                        if ($idx !== false) unset($clientsInRooms[$r][$idx]);
-                    }  
                         // add client to this room
                         if (!isset($clientsInRooms[$room]) || !is_array($clientsInRooms[$room])) $clientsInRooms[$room] = []; // <<< NEW
                         
                         if (!in_array($clientSocket, $clientsInRooms[$room], true)) {
                             $clientsInRooms[$room][] = $clientSocket;
                         }
+                        
                        // $clientsInRooms[$room][] = $clientSocket;
-                        continue;
-                    }
+
                         // joinRoom payload includes a message, that will be broadcasted to everyone in the room
-                        if (isset($decoded['type']) && $decoded['type'] === 'message') {
-                            $screenName = trim($decoded['screenName'] ?? $decoded['screen'] ?? '');
-                            $room = trim($decoded['roomName'] ?? $decoded['room'] ?? '');
+                        if (isset($decoded['message']) && trim($decoded['message']) !== '') {
                             $out = [
-                                'type' => 'message',        
+                                'type' => 'joinRoom',        
                                 'roomName' => $room,
                                 'screenName' => $clientNames[$cid] ?? $screenName,
                                 'message' => $decoded['message']
@@ -104,8 +185,10 @@ do {
                                     if ($c !== $clientSocket) socket_write($c, $normalized, strlen($normalized));
                                 }
                             }
-                            continue;
                         }
+                        continue;
+                    }
+                    continue;
                 }
             }
             
@@ -254,3 +337,6 @@ function mask($message) {
     return implode(array_map('chr', $frame));
 }
 ?>
+
+
+BESSTTTTTTTTTTTTTTTTTTTTT

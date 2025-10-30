@@ -24,11 +24,41 @@ if ($method === 'GET') {
     echo json_encode(['rooms' => $rooms]);
     exit;
 }
-
 if ($method === 'POST') {
     $raw = file_get_contents('php://input');
     $data = json_decode($raw, true);
 
+    if (isset($data['action']) && $data['action'] === 'joinRoom') {
+        $roomName   = trim($data['roomName'] ?? '');
+        $keyProvided = trim($data['key'] ?? '');
+    
+        if (!$roomName) {
+            echo json_encode(['success' => false, 'message' => 'Missing room name']);
+            exit;
+        }
+    
+        // Verify room exists and key
+        $sql = "SELECT chatroomKey FROM list_of_chatrooms WHERE chatroomName = :name";
+        $bindings = [[ ':name', $roomName, 'str' ]];
+        $res = $pdo->selectBinded($sql, $bindings);
+    
+        if (!$res) {
+            echo json_encode(['success' => false, 'message' => 'Room does not exist']);
+            exit;
+        }
+    
+        $roomKey = $res[0]['chatroomKey'] ?? '';
+    
+        if ($roomKey && $roomKey !== $keyProvided) {
+            echo json_encode(['success' => false, 'message' => 'Invalid room key']);
+            exit;
+        }
+    
+        // If all okay
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    
     $name = isset($data['name']) ? trim($data['name']) : '';
     $key = isset($data['key']) ? trim($data['key']) : null;
 
@@ -59,9 +89,12 @@ if ($method === 'POST') {
 
     if ($insertRes == 'noerror') {
         echo json_encode(['success' => true, 'message' => 'Room created']);
-    } else {
+    }
+     else {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $insertRes]);
     }
     exit;
 }
+
+
