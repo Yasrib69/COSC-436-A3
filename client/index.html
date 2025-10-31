@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Chat room via PHP web sockets</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+
+  <!-- Top banner (exact title + authors + right-corner links) -->
+  <header class="banner box">
+    <div class="banner-row title-row">
+      <div class="title">Chat room via PHP web sockets</div>
+    </div>
+    <div class="banner-row subtitle-row">
+      <div class="subtitle">by Ishaq and Yasrib</div>
+      <nav class="links">
+        <button id="helpBtn" class="linklike">Help</button>
+        <span class="sep">|</span>
+        <button id="signupBtn" class="linklike">Signup</button>
+        <span class="sep">|</span>
+        <button id="loginBtn"  class="linklike">login</button>
+        <button id="logoutBtn" class="linklike hide">logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Auth (pre-login) -->
+  <section id="authArea">
+    <div id="signupForm" class="auth box" style="display:none;">
+      <div class="row header">Sign Up</div>
+      <div class="row body">
+        <form id="formSignup" autocomplete="off">
+          <label>Username <input name="username" required></label><br/>
+          <label>Screen Name <input name="screenName" required></label><br/>
+          <label>Password <input name="password" type="password" required minlength="6"></label><br/>
+          <div id="signupErrors" class="errors"></div>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="loginForm" class="auth box" style="display:none;">
+      <div class="row header">Login</div>
+      <div class="row body">
+        <form id="formLogin" autocomplete="off">
+          <label>Username <input name="username" required></label><br/>
+          <label>Password <input name="password" type="password" required></label><br/>
+          <div id="loginErrors" class="errors"></div>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- App (post-login) -->
+  <main id="appArea" class="app-grid" style="display:none">
+    <!-- LEFT: Available Rooms + -->
+    <section class="left box">
+      <div class="row header">
+        <div class="left-title">Available Rooms  +</div>
+        <button id="createRoomBtn" class="btn-plus" title="Create room">+</button>
+      </div>
+
+      <!-- Table header -->
+      <div class="row table-head">
+        <div class="col name">Room Name</div>
+        <div class="col status">status</div>
+        <div class="col join">Join</div>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="row body scroll" id="roomsWrap">
+        <table class="rooms-table">
+          <tbody id="rooms">
+            <!-- JS injects rows; if empty, we show the scaffold text -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RIGHT: Current Room + Messages + Composer -->
+    <section class="right box">
+      <div class="row header">
+        <div id="currentRoom">Current Room name</div>
+      </div>
+
+      <!-- Messages pane -->
+      <div class="row body scroll" id="messages" role="log" aria-live="polite">
+        <!-- JS injects messages -->
+      </div>
+
+      <!-- "Type new messages here" label row -->
+      <div class="row subheader">Type new messages here</div>
+
+      <!-- Composer -->
+      <div class="row composer">
+        <input id="chatInput" type="text" placeholder="Type new messages here" autocomplete="off"/>
+        <button id="sendBtn" class="btn-send">send-button</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Help overlay -->
+  <div id="helpOverlay" class="overlay" style="display:none;">
+    <div class="overlay-inner">
+      <button id="helpClose" class="close">[x]</button>
+      <h2>Help</h2>
+      <p>
+        1) Sign up or login. 2) Create or join a room. 3) Messages in the right pane are real-time.
+        Your messages show as <b>[me:]</b>; others show as <b>[ScreenName:]</b>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Hidden storage some scripts might read -->
+  <div id="yourScreenName" class="sr-only"></div>
+
+  <script src="./ui-app.js"></script>
+</body>
+</html>

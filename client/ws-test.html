@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WS Test</title>
+<style>body{font:14px system-ui;margin:20px} #log{border:1px solid #aaa; padding:8px; height:240px; overflow:auto;}</style>
+<h1>WebSocket Test</h1>
+<h3>By Yasrib Yasir Farook</h3>
+<p>Status: <span id="st">…</span></p>
+<p>
+  Screen Name: <input id="sn" value="Probe">
+  Room: <input id="rm" value="General">
+  <button id="hello">hello</button>
+  <button id="join">join</button>
+</p>
+<p>
+  Message: <input id="msg" size="50">
+  <button id="send">send</button>
+</p>
+<div id="log"></div>
+<script>
+const host = location.hostname || '127.0.0.1';
+const ws = new WebSocket(`ws://${host}:8080`);
+const st = document.getElementById('st'), log = document.getElementById('log');
+function add(x){ const d=document.createElement('div'); d.textContent=x; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+ws.onopen=()=>{ st.textContent='Connected'; add('OPEN'); };
+ws.onclose=()=>{ st.textContent='Closed'; add('CLOSE'); };
+ws.onerror=(e)=>{ st.textContent='Error'; add('ERROR'); };
+ws.onmessage=(ev)=>{ add('RX '+ev.data); };
+document.getElementById('hello').onclick=()=> ws.send(JSON.stringify({type:'hello', screenName:document.getElementById('sn').value}));
+document.getElementById('join').onclick =()=> ws.send(JSON.stringify({type:'join',  screenName:document.getElementById('sn').value, room:document.getElementById('rm').value}));
+document.getElementById('send').onclick =()=> ws.send(JSON.stringify({type:'message',room:document.getElementById('rm').value,screenName:document.getElementById('sn').value,text:document.getElementById('msg').value}));
+</script>

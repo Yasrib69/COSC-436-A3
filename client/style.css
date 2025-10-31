@@ -1,0 +1,71 @@
+/* Basic reset */
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; color:#111; }
+.hide { display:none !important; }
+.linklike { border:none; background:none; padding:0; color:#111; cursor:pointer; }
+.linklike:hover { text-decoration: underline; }
+.sr-only { position:absolute; left:-9999px; }
+
+/* Thin-line boxes everywhere to mimic the mock */
+.box { border: 2px solid #cfcfcf; background:#fff; }
+.row { border-top: 2px solid #cfcfcf; }
+.row:first-child { border-top: none; }
+
+/* Banner */
+.banner { margin: 12px; }
+.banner-row { padding: 6px 10px; position: relative; }
+.title-row .title { text-align: center; font-weight: 800; font-size: 26px; }
+.subtitle-row .subtitle { text-align:center; color:#444; font-size: 14px; }
+.subtitle-row .links { position:absolute; right:10px; top:6px; font-size: 14px; }
+.subtitle-row .links .sep { margin: 0 6px; color:#777; }
+
+/* Auth panels (simple) */
+.auth { margin:12px; }
+.auth .row.header { padding:8px 10px; font-weight:700; background:#fafafa; }
+.auth .row.body   { padding:10px; }
+.errors { color:#b00; font-size: 0.95rem; }
+
+/* Main two-column grid */
+.app-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 12px 12px;
+}
+
+/* LEFT column */
+.left .row.header { display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:#fafafa; font-weight:700; }
+.left .row.table-head { display:grid; grid-template-columns: 1.3fr 0.7fr 0.6fr; padding:6px 10px; background:#f5f5f5; font-weight:700; }
+.left .row.body.scroll { height: 420px; overflow:auto; padding:0; }
+.rooms-table { width:100%; border-collapse: collapse; }
+.rooms-table tr { border-bottom: 1px solid #e5e5e5; }
+.rooms-table td { padding: 8px 10px; }
+.rooms-table .name  { width: 55%; }
+.rooms-table .status { width: 25%; white-space: nowrap; }
+.rooms-table .join { width: 20%; }
+.btn-plus { width:28px; height:28px; border:1px solid #888; background:#f9f9f9; cursor:pointer; }
+.btn-plus:hover { background:#efefef; }
+.btn-join { border:1px solid #888; background:#f9f9f9; padding:6px 10px; cursor:pointer; }
+.btn-join:hover { background:#efefef; }
+
+/* RIGHT column */
+.right .row.header { padding:6px 10px; background:#fafafa; font-weight:700; }
+.right .row.body.scroll { height: 340px; overflow:auto; padding:10px; }
+.right .row.subheader { padding:6px 10px; font-weight:700; background:#fafafa; }
+.right .row.composer { display:grid; grid-template-columns: 1fr auto; gap:8px; padding:6px 10px; }
+#chatInput { border:1px solid #888; padding:8px; font-size:14px; }
+.btn-send { border:1px solid #888; background:#f9f9f9; padding:6px 12px; cursor:pointer; }
+.btn-send:hover { background:#efefef; }
+
+/* Messages look */
+.msg { margin:6px 0; line-height:1.35; }
+.msg .who { font-weight:700; margin-right:6px; }
+
+/* Overlay */
+.overlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.5); z-index: 9999; }
+.overlay-inner { background:#fff; padding:18px; border-radius:6px; width:92%; max-width:520px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+
+/* Mobile */
+@media (max-width: 900px) {
+  .app-grid { grid-template-columns: 1fr; }
+}
